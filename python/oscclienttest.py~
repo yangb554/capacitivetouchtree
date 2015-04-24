@@ -1,0 +1,36 @@
+"""
+This program sends 10 random values between 0.0 and 1.0 to the /filter address,
+waiting for 1 seconds between each value.
+"""
+import argparse
+import random
+import time
+
+import serial
+
+from pythonosc import osc_message_builder
+from pythonosc import udp_client
+
+port = serial.Serial("/dev/ttyACM0", baudrate=9600)
+
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--ip", default="127.0.0.1",
+      help="The ip of the OSC server")
+  parser.add_argument("--port", type=int, default=6449,
+      help="The port the OSC server is listening on")
+  args = parser.parse_args()
+  rcv = 1
+  client = udp_client.UDPClient(args.ip, args.port)
+  #rcv = port.readline(10)
+  #print("hello\n")
+  #print(rcv)
+  while True:
+    rcv = port.readline()  
+    msg = osc_message_builder.OscMessageBuilder(address = "/hello")
+    rcv = int(rcv)
+    print(rcv)
+    msg.add_arg(rcv)
+    msg = msg.build()
+    client.send(msg)
+    time.sleep(1)
